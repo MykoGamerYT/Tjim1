@@ -1,1947 +1,981 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Tjim 1 — AI Music</title>
-
-    <style>
-        :root {
-            --bg: #050609;
-            --line: rgba(255,255,255,0.09);
-            --text: #f7f9ff;
-            --muted: #8c93a4;
-            --cyan: #4deaff;
-            --purple: #9b6cff;
-            --green: #72f5ae;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            background:
-                radial-gradient(
-                    circle at 50% -10%,
-                    rgba(77,234,255,0.12),
-                    transparent 35%
-                ),
-                radial-gradient(
-                    circle at 80% 20%,
-                    rgba(155,108,255,0.09),
-                    transparent 30%
-                ),
-                var(--bg);
-
-            color: var(--text);
-
-            font-family:
-                Inter,
-                Arial,
-                Helvetica,
-                sans-serif;
-
-            overflow-x: hidden;
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-
-            background-image:
-                linear-gradient(
-                    rgba(255,255,255,0.018) 1px,
-                    transparent 1px
-                ),
-                linear-gradient(
-                    90deg,
-                    rgba(255,255,255,0.018) 1px,
-                    transparent 1px
-                );
-
-            background-size: 50px 50px;
-
-            mask-image:
-                linear-gradient(
-                    to bottom,
-                    black,
-                    transparent 85%
-                );
-        }
-
-        /* =========================
-           NAVIGATION
-        ========================= */
-
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-
-            width: 100%;
-            height: 72px;
-
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            padding: 0 6%;
-
-            border-bottom: 1px solid var(--line);
-
-            background: rgba(5,6,9,0.72);
-
-            backdrop-filter: blur(18px);
-
-            z-index: 100;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-
-            font-size: 22px;
-            font-weight: 800;
-
-            letter-spacing: -0.7px;
-        }
-
-        .brand-mark {
-            width: 34px;
-            height: 34px;
-
-            border-radius: 10px;
-
-            display: grid;
-            place-items: center;
-
-            background:
-                linear-gradient(
-                    135deg,
-                    var(--cyan),
-                    var(--purple)
-                );
-
-            color: #050609;
-
-            font-size: 15px;
-            font-weight: 900;
-
-            box-shadow:
-                0 0 25px
-                rgba(77,234,255,0.25);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
-
-        .nav-links a {
-            color: var(--muted);
-
-            text-decoration: none;
-
-            font-size: 14px;
-
-            transition: 0.2s;
-        }
-
-        .nav-links a:hover {
-            color: white;
-        }
-
-        .nav-pill {
-            padding: 9px 15px;
-
-            border:
-                1px solid
-                rgba(77,234,255,0.25);
-
-            border-radius: 10px;
-
-            color: var(--cyan);
-
-            background:
-                rgba(77,234,255,0.06);
-
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        /* =========================
-           HERO
-        ========================= */
-
-        .hero {
-            min-height: 100vh;
-
-            padding:
-                150px
-                20px
-                90px;
-
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-
-            text-align: center;
-
-            position: relative;
-        }
-
-        .orb {
-            position: absolute;
-
-            width: 480px;
-            height: 480px;
-
-            border-radius: 50%;
-
-            background:
-                radial-gradient(
-                    circle,
-                    rgba(77,234,255,0.11),
-                    rgba(155,108,255,0.05),
-                    transparent 68%
-                );
-
-            filter: blur(10px);
-
-            top: 100px;
-
-            z-index: -1;
-
-            animation:
-                float 6s
-                ease-in-out
-                infinite;
-        }
-
-        @keyframes float {
-            0%, 100% {
-                transform:
-                    translateY(0)
-                    scale(1);
-            }
-
-            50% {
-                transform:
-                    translateY(-15px)
-                    scale(1.04);
-            }
-        }
-
-        .eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-
-            border:
-                1px solid
-                var(--line);
-
-            background:
-                rgba(255,255,255,0.035);
-
-            border-radius: 999px;
-
-            padding: 8px 13px;
-
-            color: #bfc5d3;
-
-            font-size: 12px;
-            font-weight: 700;
-
-            margin-bottom: 27px;
-        }
-
-        .eyebrow-dot {
-            width: 7px;
-            height: 7px;
-
-            border-radius: 50%;
-
-            background: var(--green);
-
-            box-shadow:
-                0 0 12px
-                rgba(114,245,174,0.8);
-        }
-
-        .hero h1 {
-            max-width: 1000px;
-
-            font-size:
-                clamp(
-                    70px,
-                    12vw,
-                    150px
-                );
-
-            line-height: 0.88;
-
-            letter-spacing: -8px;
-
-            font-weight: 900;
-        }
-
-        .gradient-text {
-            background:
-                linear-gradient(
-                    100deg,
-                    #ffffff 15%,
-                    var(--cyan) 50%,
-                    #bb8aff 85%
-                );
-
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero h2 {
-            margin-top: 24px;
-
-            font-size:
-                clamp(
-                    22px,
-                    3vw,
-                    34px
-                );
-
-            color: #d9deea;
-
-            font-weight: 500;
-
-            letter-spacing: -0.8px;
-        }
-
-        .hero > p {
-            max-width: 680px;
-
-            margin-top: 24px;
-
-            color: var(--muted);
-
-            font-size: 18px;
-
-            line-height: 1.7;
-        }
-
-        .hero-actions {
-            display: flex;
-
-            gap: 12px;
-
-            margin-top: 35px;
-        }
-
-        .button {
-            display: inline-block;
-
-            padding:
-                13px
-                20px;
-
-            border-radius: 12px;
-
-            text-decoration: none;
-
-            font-weight: 700;
-            font-size: 14px;
-
-            cursor: pointer;
-
-            transition: 0.25s;
-        }
-
-        .button-primary {
-            color: #050609;
-            background: white;
-        }
-
-        .button-primary:hover {
-            transform:
-                translateY(-2px);
-
-            box-shadow:
-                0 10px 30px
-                rgba(255,255,255,0.12);
-        }
-
-        .button-secondary {
-            border:
-                1px solid
-                var(--line);
-
-            color: #d9deea;
-
-            background:
-                rgba(255,255,255,0.035);
-        }
-
-        .button-secondary:hover {
-            background:
-                rgba(255,255,255,0.07);
-
-            transform:
-                translateY(-2px);
-        }
-
-        /* =========================
-           HELP CARD
-        ========================= */
-
-        .help-card {
-            width:
-                min(
-                    900px,
-                    92vw
-                );
-
-            margin-top: 45px;
-
-            padding:
-                17px
-                19px;
-
-            display: flex;
-            align-items: center;
-
-            gap: 15px;
-
-            text-align: left;
-
-            border:
-                1px solid
-                rgba(77,234,255,0.14);
-
-            border-radius: 17px;
-
-            background:
-                linear-gradient(
-                    90deg,
-                    rgba(77,234,255,0.055),
-                    rgba(155,108,255,0.045)
-                ),
-                rgba(255,255,255,0.025);
-
-            box-shadow:
-                0 15px 50px
-                rgba(0,0,0,0.25),
-
-                inset 0 1px
-                rgba(255,255,255,0.025);
-
-            backdrop-filter: blur(12px);
-
-            transition: 0.25s;
-        }
-
-        .help-card:hover {
-            border-color:
-                rgba(77,234,255,0.28);
-
-            transform:
-                translateY(-2px);
-        }
-
-        .help-icon {
-            width: 40px;
-            height: 40px;
-
-            flex-shrink: 0;
-
-            display: grid;
-            place-items: center;
-
-            border-radius: 12px;
-
-            background:
-                rgba(77,234,255,0.08);
-
-            border:
-                1px solid
-                rgba(77,234,255,0.15);
-
-            color: var(--cyan);
-
-            font-size: 18px;
-        }
-
-        .help-text {
-            display: flex;
-            flex-direction: column;
-
-            gap: 5px;
-
-            flex: 1;
-        }
-
-        .help-text strong {
-            color: #f3f6fc;
-
-            font-size: 14px;
-        }
-
-        .help-text span {
-            color: #858d9e;
-
-            font-size: 12px;
-
-            line-height: 1.5;
-        }
-
-        .help-button {
-            padding:
-                10px
-                15px;
-
-            flex-shrink: 0;
-
-            border-radius: 10px;
-
-            text-decoration: none;
-
-            color: var(--cyan);
-
-            background:
-                rgba(77,234,255,0.07);
-
-            border:
-                1px solid
-                rgba(77,234,255,0.18);
-
-            font-size: 12px;
-
-            font-weight: 800;
-
-            transition: 0.2s;
-        }
-
-        .help-button:hover {
-            background:
-                rgba(77,234,255,0.14);
-
-            transform:
-                translateY(-2px);
-        }
-
-        /* =========================
-           WAVEFORM
-        ========================= */
-
-        .wave {
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            gap: 4px;
-
-            height: 55px;
-
-            margin-top: 55px;
-
-            opacity: 0.8;
-        }
-
-        .bar {
-            width: 4px;
-
-            border-radius: 20px;
-
-            background:
-                linear-gradient(
-                    to top,
-                    var(--cyan),
-                    var(--purple)
-                );
-
-            animation:
-                wave 1.1s
-                ease-in-out
-                infinite;
-        }
-
-        @keyframes wave {
-            0%, 100% {
-                transform:
-                    scaleY(0.35);
-            }
-
-            50% {
-                transform:
-                    scaleY(1);
-            }
-        }
-
-        .bar:nth-child(2) { animation-delay: .1s; }
-        .bar:nth-child(3) { animation-delay: .2s; }
-        .bar:nth-child(4) { animation-delay: .3s; }
-        .bar:nth-child(5) { animation-delay: .15s; }
-        .bar:nth-child(6) { animation-delay: .4s; }
-        .bar:nth-child(7) { animation-delay: .2s; }
-        .bar:nth-child(8) { animation-delay: .35s; }
-        .bar:nth-child(9) { animation-delay: .1s; }
-        .bar:nth-child(10) { animation-delay: .25s; }
-        .bar:nth-child(11) { animation-delay: .45s; }
-        .bar:nth-child(12) { animation-delay: .2s; }
-
-        /* =========================
-           SECTIONS
-        ========================= */
-
-        section {
-            padding:
-                110px
-                6%;
-        }
-
-        .section-header {
-            text-align: center;
-
-            max-width: 700px;
-
-            margin: auto;
-        }
-
-        .section-tag {
-            color: var(--cyan);
-
-            font-size: 12px;
-
-            font-weight: 800;
-
-            letter-spacing: 1.8px;
-
-            text-transform: uppercase;
-
-            margin-bottom: 15px;
-        }
-
-        .section-header h2 {
-            font-size:
-                clamp(
-                    34px,
-                    5vw,
-                    60px
-                );
-
-            letter-spacing: -2.5px;
-
-            line-height: 1;
-        }
-
-        .section-header p {
-            margin-top: 18px;
-
-            color: var(--muted);
-
-            line-height: 1.7;
-        }
-
-        /* =========================
-           AI PREVIEW
-        ========================= */
-
-        .maker {
-            max-width: 1100px;
-
-            margin:
-                55px
-                auto
-                0;
-
-            border:
-                1px solid
-                var(--line);
-
-            border-radius: 24px;
-
-            overflow: hidden;
-
-            background:
-                linear-gradient(
-                    145deg,
-                    #0d1017,
-                    #080a0e
-                );
-
-            box-shadow:
-                0 30px 100px
-                rgba(0,0,0,0.45),
-
-                inset 0 1px
-                rgba(255,255,255,0.03);
-        }
-
-        .window-top {
-            height: 52px;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: space-between;
-
-            padding:
-                0
-                18px;
-
-            border-bottom:
-                1px solid
-                var(--line);
-        }
-
-        .window-dots {
-            display: flex;
-
-            gap: 7px;
-        }
-
-        .window-dots span {
-            width: 8px;
-            height: 8px;
-
-            background: #303541;
-
-            border-radius: 50%;
-        }
-
-        .window-title {
-            color: #7e8595;
-
-            font-size: 12px;
-        }
-
-        .online {
-            color: var(--green);
-
-            font-size: 11px;
-
-            font-weight: 800;
-        }
-
-        .maker-content {
-            padding: 28px;
-        }
-
-        .maker-label {
-            font-size: 13px;
-
-            color: #a7afbf;
-
-            margin-bottom: 10px;
-        }
-
-        .prompt {
-            min-height: 125px;
-
-            padding: 20px;
-
-            border:
-                1px solid
-                rgba(255,255,255,0.08);
-
-            border-radius: 16px;
-
-            background: #07090d;
-
-            color: #e8ebf2;
-
-            font-size: 16px;
-
-            line-height: 1.6;
-        }
-
-        .fake-cursor {
-            display: inline-block;
-
-            width: 2px;
-            height: 18px;
-
-            background:
-                var(--cyan);
-
-            margin-left: 4px;
-
-            vertical-align: middle;
-
-            animation:
-                blink 1s infinite;
-        }
-
-        @keyframes blink {
-            50% {
-                opacity: 0;
-            }
-        }
-
-        .examples {
-            display: flex;
-
-            flex-wrap: wrap;
-
-            gap: 8px;
-
-            margin-top: 15px;
-        }
-
-        .example {
-            border:
-                1px solid
-                var(--line);
-
-            background:
-                rgba(255,255,255,0.025);
-
-            color: #959dad;
-
-            padding:
-                8px
-                11px;
-
-            border-radius: 8px;
-
-            font-size: 12px;
-        }
-
-        .controls {
-            display: grid;
-
-            grid-template-columns:
-                repeat(3, 1fr);
-
-            gap: 12px;
-
-            margin-top: 18px;
-        }
-
-        .control {
-            padding: 15px;
-
-            border-radius: 13px;
-
-            border:
-                1px solid
-                var(--line);
-
-            background:
-                rgba(255,255,255,0.025);
-        }
-
-        .control small {
-            display: block;
-
-            color: #6f7685;
-
-            margin-bottom: 6px;
-
-            font-size: 11px;
-        }
-
-        .control strong {
-            color: #dde2ec;
-
-            font-size: 14px;
-        }
-
-        .preview-button {
-            width: 100%;
-
-            margin-top: 18px;
-
-            padding: 16px;
-
-            border:
-                1px solid
-                rgba(77,234,255,0.18);
-
-            border-radius: 13px;
-
-            background:
-                rgba(77,234,255,0.055);
-
-            color: var(--cyan);
-
-            font-weight: 800;
-
-            font-size: 14px;
-
-            cursor:
-                not-allowed;
-
-            opacity: 0.85;
-        }
-
-        .coming {
-            margin-top: 12px;
-
-            text-align: center;
-
-            color: #626a79;
-
-            font-size: 11px;
-        }
-
-        /* =========================
-           FEATURES
-        ========================= */
-
-        .feature-grid {
-            max-width: 1100px;
-
-            margin:
-                55px
-                auto
-                0;
-
-            display: grid;
-
-            grid-template-columns:
-                repeat(3, 1fr);
-
-            gap: 17px;
-        }
-
-        .feature {
-            padding: 27px;
-
-            border:
-                1px solid
-                var(--line);
-
-            border-radius: 20px;
-
-            background:
-                rgba(255,255,255,0.025);
-
-            transition: 0.25s;
-        }
-
-        .feature:hover {
-            transform:
-                translateY(-5px);
-
-            border-color:
-                rgba(77,234,255,0.2);
-        }
-
-        .icon {
-            width: 42px;
-            height: 42px;
-
-            display: grid;
-
-            place-items: center;
-
-            border-radius: 12px;
-
-            background:
-                rgba(77,234,255,0.07);
-
-            border:
-                1px solid
-                rgba(77,234,255,0.12);
-
-            font-size: 19px;
-
-            margin-bottom: 18px;
-        }
-
-        .feature h3 {
-            font-size: 18px;
-
-            margin-bottom: 10px;
-        }
-
-        .feature p {
-            color: var(--muted);
-
-            font-size: 14px;
-
-            line-height: 1.65;
-        }
-
-        /* =========================
-           ROADMAP
-        ========================= */
-
-        .roadmap {
-            max-width: 850px;
-
-            margin:
-                55px
-                auto
-                0;
-        }
-
-        .roadmap-item {
-            display: grid;
-
-            grid-template-columns:
-                80px
-                1fr;
-
-            gap: 20px;
-
-            padding:
-                25px
-                0;
-
-            border-bottom:
-                1px solid
-                var(--line);
-        }
-
-        .roadmap-number {
-            color: var(--cyan);
-
-            font-weight: 900;
-
-            font-size: 13px;
-
-            padding-top: 2px;
-        }
-
-        .roadmap-item h3 {
-            margin-bottom: 7px;
-        }
-
-        .roadmap-item p {
-            color: var(--muted);
-
-            line-height: 1.6;
-
-            font-size: 14px;
-        }
-
-        /* =========================
-           CONTACT
-        ========================= */
-
-        .cta {
-            max-width: 1000px;
-
-            margin: 0 auto;
-
-            text-align: center;
-
-            padding:
-                75px
-                25px;
-
-            border:
-                1px solid
-                var(--line);
-
-            border-radius: 28px;
-
-            background:
-                radial-gradient(
-                    circle at 50% 0%,
-                    rgba(77,234,255,0.09),
-                    transparent 45%
-                ),
-                rgba(255,255,255,0.02);
-        }
-
-        .cta h2 {
-            font-size:
-                clamp(
-                    38px,
-                    5vw,
-                    65px
-                );
-
-            letter-spacing: -2.5px;
-        }
-
-        .cta p {
-            color: var(--muted);
-
-            margin:
-                17px
-                auto
-                26px;
-
-            max-width: 600px;
-
-            line-height: 1.7;
-        }
-
-        .email-address {
-            margin-top: 18px;
-
-            color: #656c7b;
-
-            font-size: 13px;
-        }
-
-        /* =========================
-           FOOTER
-        ========================= */
-
-        footer {
-            padding:
-                45px
-                6%;
-
-            margin-top: 80px;
-
-            border-top:
-                1px solid
-                var(--line);
-
-            display: flex;
-
-            justify-content: space-between;
-
-            align-items: center;
-
-            color: #656c7b;
-
-            font-size: 12px;
-        }
-
-        /* =========================
-           MOBILE
-        ========================= */
-
-        @media (max-width: 800px) {
-
-            .nav-links {
-                display: none;
-            }
-
-            .hero h1 {
-                letter-spacing: -5px;
-            }
-
-            .controls,
-            .feature-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .hero-actions {
-                flex-direction: column;
-
-                width: 100%;
-
-                max-width: 300px;
-            }
-
-            .wave {
-                margin-top: 40px;
-            }
-
-            .maker-content {
-                padding: 20px;
-            }
-
-            .roadmap-item {
-                grid-template-columns:
-                    50px
-                    1fr;
-            }
-
-            .help-card {
-                flex-wrap: wrap;
-
-                text-align: center;
-
-                justify-content: center;
-            }
-
-            .help-text {
-                flex: 100%;
-
-                align-items: center;
-            }
-
-            .help-button {
-                width: 100%;
-
-                text-align: center;
-            }
-
-            footer {
-                flex-direction: column;
-
-                gap: 12px;
-
-                text-align: center;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tjim 1 — AI Music</title>
+  <style>
+    :root {
+      --bg: #05070b;
+      --bg-2: #0c1016;
+      --bg-3: #121a25;
+      --panel: rgba(255,255,255,0.04);
+      --panel-strong: rgba(255,255,255,0.06);
+      --line: rgba(255,255,255,0.10);
+      --text: #f4f7ff;
+      --muted: #9aa6bb;
+      --cyan: #5fe7ff;
+      --blue: #74a9ff;
+      --purple: #b187ff;
+      --green: #7df2ba;
+      --shadow: 0 30px 80px rgba(0,0,0,0.38);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(95,231,255,0.18), transparent 22%),
+        radial-gradient(circle at 82% 12%, rgba(177,135,255,0.18), transparent 24%),
+        radial-gradient(circle at 50% 80%, rgba(125,242,186,0.1), transparent 18%),
+        linear-gradient(180deg, #05070b 0%, #0a0f17 100%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.027) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.027) 1px, transparent 1px);
+      background-size: 52px 52px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent 90%);
+    }
+
+    a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; }
+
+    .container {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(5,7,11,0.72);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+    }
+
+    .nav-inner {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.7px;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #dffbff, var(--cyan) 32%, #e8d4ff 62%, var(--purple) 100%);
+      color: #070b10;
+      font-weight: 900;
+      box-shadow: 0 0 24px rgba(95,231,255,0.24), inset 0 1px 0 rgba(255,255,255,0.5);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .nav-links a {
+      transition: 0.2s ease;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-pill {
+      padding: 9px 15px;
+      border-radius: 10px;
+      border: 1px solid rgba(95,231,255,0.2);
+      background: linear-gradient(180deg, rgba(95,231,255,0.1), rgba(95,231,255,0.04));
+      color: var(--cyan);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .hero {
+      position: relative;
+      padding: 72px 0 40px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 38px;
+      align-items: center;
+      min-height: 760px;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+      animation: reveal-up 0.8s ease both;
+    }
+
+    @keyframes reveal-up {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      color: #d1d9ee;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 22px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .eyebrow-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px rgba(125,242,186,0.9);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(56px, 7vw, 118px);
+      line-height: 0.9;
+      letter-spacing: -0.08em;
+      font-weight: 900;
+    }
+
+    .gradient-text {
+      display: inline-block;
+      background: linear-gradient(105deg, #ffffff 16%, var(--cyan) 44%, #d0b7ff 82%);
+      background-size: 180% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: text-shimmer 5s linear infinite;
+    }
+
+    @keyframes text-shimmer {
+      to { background-position: 180% center; }
+    }
+
+    .lead {
+      margin-top: 22px;
+      max-width: 640px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      margin-top: 30px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 13px 20px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      font-size: 14px;
+      font-weight: 700;
+      transition: 0.25s ease;
+    }
+
+    .button-primary {
+      color: #05070b;
+      background: linear-gradient(180deg, #ffffff 0%, #edf3ff 100%);
+      box-shadow: 0 14px 30px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .button-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 38px rgba(255,255,255,0.12), 0 0 18px rgba(95,231,255,0.12);
+    }
+
+    .button-secondary {
+      color: var(--text);
+      border-color: var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    }
+
+    .button-secondary:hover {
+      background: rgba(255,255,255,0.07);
+      transform: translateY(-2px);
+    }
+
+    .stats {
+      margin-top: 32px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .help-widget {
+      width: min(420px, 100%);
+      display: grid;
+      grid-template-columns: 38px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      margin-top: 26px;
+      padding: 12px 13px;
+      border: 1px solid rgba(125,242,186,0.2);
+      border-radius: 16px;
+      background: linear-gradient(105deg, rgba(125,242,186,0.09), rgba(95,231,255,0.05));
+      box-shadow: 0 14px 32px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.05);
+      animation: widget-in 0.8s 0.35s ease both, widget-breathe 4s 1.2s ease-in-out infinite;
+    }
+
+    @keyframes widget-in {
+      from { opacity: 0; transform: translateY(16px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes widget-breathe {
+      50% { box-shadow: 0 18px 38px rgba(0,0,0,0.22), 0 0 22px rgba(125,242,186,0.08), inset 0 1px 0 rgba(255,255,255,0.05); }
+    }
+
+    .help-widget-icon {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      color: #07100d;
+      background: var(--green);
+      font-size: 17px;
+      box-shadow: 0 0 18px rgba(125,242,186,0.25);
+      animation: icon-pulse 2.2s ease-in-out infinite;
+    }
+
+    @keyframes icon-pulse {
+      50% { transform: scale(1.08); box-shadow: 0 0 26px rgba(125,242,186,0.42); }
+    }
+
+    .help-widget-copy strong,
+    .help-widget-copy span {
+      display: block;
+    }
+
+    .help-widget-copy strong {
+      color: #ecfff5;
+      font-size: 13px;
+    }
+
+    .help-widget-copy span {
+      margin-top: 3px;
+      color: #9bb3aa;
+      font-size: 11px;
+    }
+
+    .help-widget-link {
+      padding: 9px 11px;
+      border: 1px solid rgba(125,242,186,0.22);
+      border-radius: 9px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+      transition: 0.2s ease;
+    }
+
+    .help-widget-link:hover {
+      color: #07100d;
+      background: var(--green);
+      transform: translateX(2px);
+    }
+
+    .stat {
+      min-width: 110px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--line);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 24px;
+      letter-spacing: -0.06em;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .hero-panel {
+      position: relative;
+      z-index: 1;
+      padding: 18px;
+      animation: panel-float 6s ease-in-out infinite;
+    }
+
+    @keyframes panel-float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-12px) rotate(0.5deg); }
+    }
+
+    .panel-surface {
+      position: relative;
+      padding: 18px;
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-surface::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(95,231,255,0.18), transparent 25%);
+      pointer-events: none;
+    }
+
+    .window-bar {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 42px;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--line);
+      color: #8f9cb2;
+      font-size: 12px;
+    }
+
+    .dots {
+      display: flex;
+      gap: 7px;
+    }
+
+    .dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #3d4657;
+    }
+
+    .studio {
+      position: relative;
+      z-index: 1;
+      padding: 18px 18px 14px;
+    }
+
+    .studio-label {
+      color: #a7b2c6;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+
+    .prompt-box {
+      padding: 20px 18px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #0c1119, #090d12);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #eef3ff;
+      min-height: 120px;
+      line-height: 1.6;
+      font-size: 15px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 18px;
+      background: var(--cyan);
+      margin-left: 4px;
+      vertical-align: middle;
+      animation: blink 1s infinite;
+      box-shadow: 0 0 12px rgba(95,231,255,0.8);
+    }
+
+    @keyframes blink { 50% { opacity: 0; } }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .chip {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+      color: #a0adbf;
+      font-size: 11px;
+      animation: chip-glow 3s ease-in-out infinite;
+    }
+
+    .chip:nth-child(2) { animation-delay: 0.5s; }
+    .chip:nth-child(3) { animation-delay: 1s; }
+    .chip:nth-child(4) { animation-delay: 1.5s; }
+
+    @keyframes chip-glow {
+      50% { border-color: rgba(95,231,255,0.28); color: #c4d5e8; }
+    }
+
+    .meter-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .meter {
+      padding: 14px 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .meter small {
+      display: block;
+      color: #75819a;
+      font-size: 10px;
+      margin-bottom: 6px;
+    }
+
+    .meter strong {
+      color: #ebf1ff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .meter {
+      animation: meter-rise 0.7s 0.7s ease both;
+    }
+
+    .meter:nth-child(2) { animation-delay: 0.85s; }
+    .meter:nth-child(3) { animation-delay: 1s; }
+
+    @keyframes meter-rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .generate-btn {
+      width: 100%;
+      margin-top: 18px;
+      padding: 16px 18px;
+      border: 1px solid rgba(95,231,255,0.2);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(95,231,255,0.08), rgba(95,231,255,0.04));
+      color: var(--cyan);
+      font-weight: 800;
+      font-size: 14px;
+      cursor: not-allowed;
+      opacity: 0.9;
+    }
+
+    .panel-note {
+      margin-top: 12px;
+      color: #65738a;
+      text-align: center;
+      font-size: 11px;
+    }
+
+    .section {
+      padding: 80px 0;
+    }
+
+    .section-header {
+      max-width: 760px;
+      margin: 0 auto 32px;
+      text-align: center;
+    }
+
+    .section-tag {
+      color: var(--cyan);
+      font-size: 12px;
+      letter-spacing: 1.8px;
+      text-transform: uppercase;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-size: clamp(32px, 4vw, 54px);
+      line-height: 1;
+      letter-spacing: -0.06em;
+    }
+
+    .section-header p {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .feature {
+      padding: 26px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+      border: 1px solid var(--line);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 12px 28px rgba(0,0,0,0.12);
+      transition: 0.25s ease;
+    }
+
+    .feature:hover {
+      transform: translateY(-5px);
+      border-color: rgba(95,231,255,0.22);
+      box-shadow: 0 18px 42px rgba(0,0,0,0.18), 0 0 18px rgba(95,231,255,0.08);
+    }
+
+    .feature-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      background: rgba(95,231,255,0.08);
+      border: 1px solid rgba(95,231,255,0.15);
+      font-size: 19px;
+    }
+
+    .feature h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .feature p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .timeline {
+      max-width: 860px;
+      margin: 40px auto 0;
+    }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 84px 1fr;
+      gap: 18px;
+      padding: 26px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .phase {
+      font-weight: 900;
+      font-size: 13px;
+      color: var(--cyan);
+      padding-top: 2px;
+    }
+
+    .timeline-item h3 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+
+    .timeline-item p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .cta-box {
+      max-width: 1020px;
+      margin: 0 auto;
+      padding: 72px 26px;
+      text-align: center;
+      border-radius: 28px;
+      border: 1px solid var(--line);
+      background: radial-gradient(circle at 50% 0%, rgba(95,231,255,0.12), transparent 45%), linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+      box-shadow: 0 22px 52px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .cta-box h2 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 64px);
+      letter-spacing: -0.06em;
+      line-height: 1;
+    }
+
+    .cta-box p {
+      max-width: 620px;
+      margin: 18px auto 26px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 17px;
+    }
+
+    .cta-mail {
+      margin-top: 18px;
+      color: #69758b;
+      font-size: 13px;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 30px 0 52px;
+      color: #6a7788;
+      font-size: 12px;
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        min-height: auto;
+        padding-top: 48px;
+      }
+
+      .feature-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 700px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        padding-top: 52px;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      .button {
+        width: 100%;
+      }
+
+      .stats {
+        justify-content: center;
+      }
+
+      .help-widget {
+        grid-template-columns: 38px 1fr;
+      }
+
+      .help-widget-link {
+        grid-column: 1 / -1;
+        text-align: center;
+      }
+
+      .feature-grid,
+      .meter-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .timeline-item {
+        grid-template-columns: 64px 1fr;
+      }
+
+      .footer-inner {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <nav>
+    <div class="container nav-inner">
+      <div class="brand">
+        <div class="brand-mark">T</div>
+        <span>Tjim 1</span>
+      </div>
 
-    <!-- =========================
-         NAVIGATION
-    ========================= -->
+      <div class="nav-links">
+        <a href="#home">Home</a>
+        <a href="#preview">Preview</a>
+        <a href="#features">Features</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#help">Help</a>
+      </div>
 
-    <nav>
+      <div class="nav-pill">AI MUSIC · PREVIEW</div>
+    </div>
+  </nav>
 
-        <div class="brand">
+  <main id="home">
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <div class="eyebrow">
+            <span class="eyebrow-dot"></span>
+            Tjim 1 is currently in development
+          </div>
 
-            <div class="brand-mark">
-                T
+          <h1>
+            Make music<br />
+            from <span class="gradient-text">imagination.</span>
+          </h1>
+
+          <p class="lead">
+            Tjim 1 is a future AI music studio designed to turn ideas, moods and genres into songs you can actually build from.
+          </p>
+
+          <div class="hero-actions">
+            <a class="button button-primary" href="#preview">Explore the preview</a>
+            <a class="button button-secondary" href="#features">See the vision</a>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <strong>AI</strong>
+              <span>Music engine</span>
             </div>
+            <div class="stat">
+              <strong>3D</strong>
+              <span>Creative flow</span>
+            </div>
+            <div class="stat">
+              <strong>∞</strong>
+              <span>Ideas</span>
+            </div>
+          </div>
 
-            Tjim 1
-
+          <div class="help-widget">
+            <div class="help-widget-icon">✦</div>
+            <div class="help-widget-copy">
+              <strong>Want to help build Tjim 1?</strong>
+              <span>Ideas, feedback and music suggestions are welcome.</span>
+            </div>
+            <a class="help-widget-link" href="https://mail.google.com/mail/?view=cm&fs=1&to=mykogameryt20@gmail.com&su=I%20want%20to%20help%20with%20Tjim%201" target="_blank" rel="noopener noreferrer">Email us</a>
+          </div>
         </div>
 
+        <div class="hero-panel">
+          <div class="panel-surface">
+            <div class="window-bar">
+              <div class="dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div>Tjim 1 / Song Studio</div>
+              <div style="color: var(--green); font-weight: 800;">● LIVE</div>
+            </div>
 
-        <div class="nav-links">
+            <div class="studio">
+              <div class="studio-label">Describe your song</div>
 
-            <a href="#home">
-                Home
-            </a>
+              <div class="prompt-box">
+                Create a dreamy synth-pop track with soft drums, warm basslines and a grand emotional chorus
+                <span class="cursor"></span>
+              </div>
 
-            <a href="#preview">
-                Preview
-            </a>
+              <div class="chip-row">
+                <div class="chip">🎹 Piano</div>
+                <div class="chip">🎮 Game vibe</div>
+                <div class="chip">🌌 Ambient</div>
+                <div class="chip">🎬 Cinematic</div>
+              </div>
 
-            <a href="#features">
-                Features
-            </a>
+              <div class="meter-grid">
+                <div class="meter">
+                  <small>STYLE</small>
+                  <strong>Synth-pop</strong>
+                </div>
+                <div class="meter">
+                  <small>MOOD</small>
+                  <strong>Dreamy</strong>
+                </div>
+                <div class="meter">
+                  <small>BEATS</small>
+                  <strong>110 BPM</strong>
+                </div>
+              </div>
 
-            <a href="#roadmap">
-                Roadmap
-            </a>
+              <button class="generate-btn" disabled>✦ Generate with Tjim 1</button>
+              <div class="panel-note">Generation is disabled in this preview.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-            <a href="#help">
-                Help
-            </a>
+    <section class="section" id="preview">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">The experience</div>
+          <h2>Built for creators who think in sound.</h2>
+          <p>
+            The concept is simple: describe a feeling, shape a scene, and let the AI turn it into music-making direction.
+          </p>
+        </div>
+      </div>
+    </section>
 
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">The idea</div>
+          <h2>Everything starts with the song.</h2>
+          <p>Tjim 1 is designed to understand musical ideas, instruments, pace, emotion and structure in one creative flow.</p>
         </div>
 
+        <div class="feature-grid">
+          <div class="feature">
+            <div class="feature-icon">🧠</div>
+            <h3>Understands intent</h3>
+            <p>Interpret mood, genre, energy and atmosphere from simple natural language prompts.</p>
+          </div>
 
-        <div class="nav-pill">
-            AI MUSIC · PREVIEW
+          <div class="feature">
+            <div class="feature-icon">🎼</div>
+            <h3>Musical structure</h3>
+            <p>Create meaningful arrangement layers, tempo patterns and emotional progression.</p>
+          </div>
+
+          <div class="feature">
+            <div class="feature-icon">🎹</div>
+            <h3>Instrument-first design</h3>
+            <p>Shape the track around synths, bass, piano, drums and cinematic textures.</p>
+          </div>
+
+          <div class="feature">
+            <div class="feature-icon">🎮</div>
+            <h3>Game soundtracks</h3>
+            <p>Generate emotional, adaptive scoring ideas for worlds, worlds and game scenes.</p>
+          </div>
+
+          <div class="feature">
+            <div class="feature-icon">🎬</div>
+            <h3>Cinematic music</h3>
+            <p>Build tension, release, discovery and dramatic transitions around a storytelling mood.</p>
+          </div>
+
+          <div class="feature">
+            <div class="feature-icon">⚡</div>
+            <h3>Fast creative loop</h3>
+            <p>Keep the process visual, fast and simple so music creation feels natural and playful.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="roadmap">
+      <div class="container">
+        <div class="section-header">
+          <div class="section-tag">Development</div>
+          <h2>The roadmap to Tjim 1.</h2>
+          <p>The interface, concept and direction are already being shaped — the first real engine comes next.</p>
         </div>
 
-    </nav>
-
-
-    <!-- =========================
-         MAIN
-    ========================= -->
-
-    <main id="home">
-
-
-        <!-- HERO -->
-
-        <section class="hero">
-
-            <div class="orb"></div>
-
-
-            <div class="eyebrow">
-
-                <span class="eyebrow-dot"></span>
-
-                Tjim 1 is currently in development
-
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="phase">01</div>
+            <div>
+              <h3>Interface</h3>
+              <p>Design the product experience and polish the creative flow of writing a song through prompts.</p>
             </div>
+          </div>
 
-
-            <h1>
-
-                Meet
-
-                <span class="gradient-text">
-                    Tjim 1
-                </span>
-
-            </h1>
-
-
-            <h2>
-                Your future AI music maker.
-            </h2>
-
-
-            <p>
-                Tjim 1 is being designed to understand
-                musical ideas, styles, moods and instruments
-                — and eventually turn them into music.
-            </p>
-
-
-            <div class="hero-actions">
-
-                <a
-                    class="button button-primary"
-                    href="#preview"
-                >
-                    Explore the preview
-                </a>
-
-
-                <a
-                    class="button button-secondary"
-                    href="#features"
-                >
-                    See what Tjim can do
-                </a>
-
+          <div class="timeline-item">
+            <div class="phase">02</div>
+            <div>
+              <h3>Music engine</h3>
+              <p>Turn text prompts into playable musical structure, tuning, rhythm and arrangement ideas.</p>
             </div>
+          </div>
 
-
-            <!-- HELP CARD -->
-
-            <div class="help-card">
-
-                <div class="help-icon">
-                    ✦
-                </div>
-
-
-                <div class="help-text">
-
-                    <strong>
-                        Want to help build Tjim 1?
-                    </strong>
-
-                    <span>
-                        Ideas, feedback, coding help
-                        and music suggestions are welcome.
-                    </span>
-
-                </div>
-
-
-                <!-- GMAIL BUTTON -->
-
-                <a
-                    class="help-button"
-                    href="https://mail.google.com/mail/?view=cm&fs=1&to=mykogameryt20@gmail.com&su=I%20want%20to%20help%20with%20Tjim%201"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    Email us →
-                </a>
-
+          <div class="timeline-item">
+            <div class="phase">03</div>
+            <div>
+              <h3>Audio generation</h3>
+              <p>Connect the system to actual synthesis, sound design and music generation tools.</p>
             </div>
+          </div>
 
-
-            <!-- WAVEFORM -->
-
-            <div
-                class="wave"
-                aria-hidden="true"
-            >
-
-                <div
-                    class="bar"
-                    style="height:18px"
-                ></div>
-
-                <div
-                    class="bar"
-                    style="height:30px"
-                ></div>
-
-                <div
-                    class="bar"
-                    style="height:43px"
-                ></div>
-
-                <div
-                    class="bar"
-                    style="height:26px"
-                ></div>
-
-                <div
-                    class="bar"
-                    style="height:50px"
-                ></div>
-
-                <div
-                    class="bar"
-                    style="height:35px"
-                ></div>
-
-                <div
-                    class="bar"
-                    style="height:47px"
-                ></div>
-
-                <div
-                    class="bar"
-                    style="height:23px"
-                ></div>
-
-                <div
-                    class="bar"
-                    style="height:39px"
-                ></div>
-
-                <div
-                    class="bar"
-                    style="height:51px"
-                ></div>
-
-                <div
-                    class="bar"
-                    style="height:29px"
-                ></div>
-
-                <div
-                    class="bar"
-                    style="height:44px"
-                ></div>
-
+          <div class="timeline-item">
+            <div class="phase">04</div>
+            <div>
+              <h3>Launch</h3>
+              <p>Combine the product, engine and audio layer into a single polished Tjim 1 experience.</p>
             </div>
-
-        </section>
-
-
-        <!-- =========================
-             PREVIEW
-        ========================= -->
-
-        <section id="preview">
-
-            <div class="section-header">
-
-                <div class="section-tag">
-                    THE EXPERIENCE
-                </div>
-
-                <h2>
-                    This is what Tjim 1 will feel like.
-                </h2>
-
-                <p>
-                    The interface is ready to show how
-                    the AI will work. The actual
-                    music-generation engine will be added later.
-                </p>
-
-            </div>
-
-
-            <div class="maker">
-
-                <div class="window-top">
-
-                    <div class="window-dots">
-
-                        <span></span>
-                        <span></span>
-                        <span></span>
-
-                    </div>
-
-
-                    <div class="window-title">
-                        Tjim 1 / Song Studio
-                    </div>
-
-
-                    <div class="online">
-                        ● PREVIEW
-                    </div>
-
-                </div>
-
-
-                <div class="maker-content">
-
-                    <div class="maker-label">
-                        Describe your song
-                    </div>
-
-
-                    <div class="prompt">
-
-                        Create an energetic electronic song
-                        with futuristic synths, powerful drums
-                        and a cinematic ending
-
-                        <span class="fake-cursor"></span>
-
-                    </div>
-
-
-                    <div class="examples">
-
-                        <div class="example">
-                            🎹 Calm piano
-                        </div>
-
-                        <div class="example">
-                            🎮 Game soundtrack
-                        </div>
-
-                        <div class="example">
-                            🚀 Futuristic electronic
-                        </div>
-
-                        <div class="example">
-                            🎬 Cinematic
-                        </div>
-
-                        <div class="example">
-                            🌌 Ambient space
-                        </div>
-
-                    </div>
-
-
-                    <div class="controls">
-
-
-                        <div class="control">
-
-                            <small>
-                                STYLE
-                            </small>
-
-                            <strong>
-                                Electronic
-                            </strong>
-
-                        </div>
-
-
-                        <div class="control">
-
-                            <small>
-                                MOOD
-                            </small>
-
-                            <strong>
-                                Energetic
-                            </strong>
-
-                        </div>
-
-
-                        <div class="control">
-
-                            <small>
-                                INSTRUMENTS
-                            </small>
-
-                            <strong>
-                                Synth · Drums · Bass
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-                    <button
-                        class="preview-button"
-                        disabled
-                    >
-                        ✦ Generate with Tjim 1
-                    </button>
-
-
-                    <div class="coming">
-
-                        Generation is disabled in this preview.
-                        The Tjim 1 AI will be connected here later.
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================
-             FEATURES
-        ========================= -->
-
-        <section id="features">
-
-            <div class="section-header">
-
-                <div class="section-tag">
-                    THE IDEA
-                </div>
-
-
-                <h2>
-                    Built around music.
-                </h2>
-
-
-                <p>
-                    Tjim 1 is being designed as a
-                    music-focused AI, rather than
-                    just another chatbot.
-                </p>
-
-            </div>
-
-
-            <div class="feature-grid">
-
-
-                <div class="feature">
-
-                    <div class="icon">
-                        🧠
-                    </div>
-
-                    <h3>
-                        Understands ideas
-                    </h3>
-
-                    <p>
-                        Tjim 1 will interpret descriptions
-                        such as mood, genre, instruments,
-                        energy and atmosphere.
-                    </p>
-
-                </div>
-
-
-                <div class="feature">
-
-                    <div class="icon">
-                        🎼
-                    </div>
-
-                    <h3>
-                        Musical structure
-                    </h3>
-
-                    <p>
-                        The goal is to create structured
-                        music with melodies, chords,
-                        rhythm and sections.
-                    </p>
-
-                </div>
-
-
-                <div class="feature">
-
-                    <div class="icon">
-                        🎹
-                    </div>
-
-                    <h3>
-                        Instruments
-                    </h3>
-
-                    <p>
-                        Piano, synthesizers, drums, bass
-                        and other instruments can become
-                        part of a generated track.
-                    </p>
-
-                </div>
-
-
-                <div class="feature">
-
-                    <div class="icon">
-                        🎮
-                    </div>
-
-                    <h3>
-                        Game music
-                    </h3>
-
-                    <p>
-                        Imagine describing the atmosphere
-                        of your game and creating music
-                        around that idea.
-                    </p>
-
-                </div>
-
-
-                <div class="feature">
-
-                    <div class="icon">
-                        🎬
-                    </div>
-
-                    <h3>
-                        Cinematic music
-                    </h3>
-
-                    <p>
-                        Tension, adventure, discovery
-                        and dramatic moments can all
-                        become musical directions.
-                    </p>
-
-                </div>
-
-
-                <div class="feature">
-
-                    <div class="icon">
-                        ⚡
-                    </div>
-
-                    <h3>
-                        Simple interface
-                    </h3>
-
-                    <p>
-                        The goal is to make music creation
-                        feel as straightforward as
-                        writing a sentence.
-                    </p>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================
-             ROADMAP
-        ========================= -->
-
-        <section id="roadmap">
-
-            <div class="section-header">
-
-                <div class="section-tag">
-                    DEVELOPMENT
-                </div>
-
-
-                <h2>
-                    The road to Tjim 1.
-                </h2>
-
-
-                <p>
-                    The website comes first.
-                    The AI comes next.
-                </p>
-
-            </div>
-
-
-            <div class="roadmap">
-
-
-                <div class="roadmap-item">
-
-                    <div class="roadmap-number">
-                        01
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Interface
-                        </h3>
-
-                        <p>
-                            Create the Tjim 1 website and
-                            the complete music-generation interface.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="roadmap-item">
-
-                    <div class="roadmap-number">
-                        02
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Music engine
-                        </h3>
-
-                        <p>
-                            Build the system that can understand
-                            a prompt and transform it into
-                            musical information.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="roadmap-item">
-
-                    <div class="roadmap-number">
-                        03
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Audio generation
-                        </h3>
-
-                        <p>
-                            Connect the musical system to actual
-                            audio synthesis or music-generation
-                            technology.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="roadmap-item">
-
-                    <div class="roadmap-number">
-                        04
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            Tjim 1
-                        </h3>
-
-                        <p>
-                            Connect everything together and turn
-                            the prototype into the real Tjim 1 system.
-                        </p>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================
-             HELP / CONTACT
-        ========================= -->
-
-        <section id="help">
-
-            <div class="cta">
-
-                <div class="section-tag">
-                    HELP BUILD TJIM 1
-                </div>
-
-
-                <h2>
-                    Want to help with Tjim 1?
-                </h2>
-
-
-                <p>
-                    Tjim 1 is a project in development.
-                    Ideas, feedback, coding help and
-                    music-related suggestions are welcome.
-                </p>
-
-
-                <!-- GMAIL BUTTON -->
-
-                <a
-                    class="button button-primary"
-                    href="https://mail.google.com/mail/?view=cm&fs=1&to=mykogameryt20@gmail.com&su=I%20want%20to%20help%20with%20Tjim%201"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    ✉ Email the Tjim 1 team
-                </a>
-
-
-                <div class="email-address">
-                    mykogameryt20@gmail.com
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================
-             FINAL CTA
-        ========================= -->
-
-        <section>
-
-            <div class="cta">
-
-                <h2>
-                    Tjim 1 starts here.
-                </h2>
-
-
-                <p>
-                    The AI isn't generating music yet.
-                    But the interface, concept and
-                    vision are ready.
-                </p>
-
-
-                <a
-                    class="button button-primary"
-                    href="#home"
-                >
-                    Back to the top ↑
-                </a>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <!-- =========================
-         FOOTER
-    ========================= -->
-
-    <footer>
-
-        <div>
-            © 2026 Tjim 1
+          </div>
         </div>
+      </div>
+    </section>
 
+    <section class="section" id="help">
+      <div class="container">
+        <div class="cta-box">
+          <div class="section-tag">Help build Tjim 1</div>
+          <h2>Want to help shape the future of AI music?</h2>
+          <p>
+            The project is in motion. If you have ideas, feedback, code help or music direction, this is the place to get involved.
+          </p>
 
-        <div>
-            AI Music • In Development
+          <a class="button button-primary" href="https://mail.google.com/mail/?view=cm&fs=1&to=mykogameryt20@gmail.com&su=I%20want%20to%20help%20with%20Tjim%201" target="_blank" rel="noopener noreferrer">✉ Email the Tjim 1 team</a>
+          <div class="cta-mail">mykogameryt20@gmail.com</div>
         </div>
+      </div>
+    </section>
+  </main>
 
-    </footer>
-
+  <footer>
+    <div class="container footer-inner">
+      <div>© 2026 Tjim 1</div>
+      <div>AI Music • In Development</div>
+    </div>
+  </footer>
 </body>
 </html>
-```
